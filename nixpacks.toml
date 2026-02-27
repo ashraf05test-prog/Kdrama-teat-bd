@@ -1,0 +1,8 @@
+[phases.setup]
+nixPkgs = ['ffmpeg', 'fontconfig', 'noto-fonts', 'noto-fonts-cjk']
+
+[phases.build]
+cmds = ['pip install --no-cache-dir -r requirements.txt']
+
+[start]
+cmd = 'gunicorn --timeout 3600 --workers 1 --bind 0.0.0.0:$PORT app:app'
