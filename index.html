@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>KDrama Sub Uploader</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+<h1>KDramaBD Sub Uploader</h1>
+
+<textarea id="urls" rows="6" placeholder="Paste episode URLs (one per line)" style="width:100%"></textarea><br><br>
+
+<label>Quality: </label>
+<select id="quality">
+  <option value="1080p">1080p Full HD</option>
+  <option value="720p">720p</option>
+  <option value="360p">360p</option>
+</select><br><br>
+
+<label>Title: </label><input id="title" type="text" placeholder="Optional"><br><br>
+<label>Caption: </label><textarea id="caption" placeholder="Optional"></textarea><br><br>
+
+<label>Translate to Bangla: </label><input type="checkbox" id="translate"><br><br>
+
+<button onclick="startUpload()">Start Processing</button>
+
+<div id="status"></div>
+<div id="logs" style="white-space: pre-wrap; font-family: monospace;"></div>
+
+<script>
+function startUpload() {
+  let data = {
+    urls: $('#urls').val(),
+    quality: $('#quality').val(),
+    title: $('#title').val(),
+    caption: $('#caption').val(),
+    translate: $('#translate').is(':checked'),
+    font: 'NotoSansBengali'  // default, you can add select later
+  };
+
+  $.post('/start', JSON.stringify(data), function(res) {
+    res.task_ids.forEach(tid => {
+      let intv = setInterval(() => {
+        $.get('/status/' + tid, function(s) {
+          $('#status').html(`Task ${tid}: ${s.status} - ${s.progress}%`);
+          $('#logs').append(s.logs.join('\n') + '\n');
+          if (s.link) \( ('#logs').append(`Link: <a href=" \){s.link}">${s.link}</a>\n`);
+          if (s.status === 'Completed' || s.status === 'Failed') clearInterval(intv);
+        });
+      }, 4000);
+    });
+  });
+}
+</script>
+</body>
+</html>
